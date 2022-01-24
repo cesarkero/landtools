@@ -1,0 +1,46 @@
+---
+title: "shadows"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{shadows}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Calculate footprint for a day
+Load library
+
+```{r setup}
+library(landtools)
+```
+
+Here is an example of how to calculate the footprint of the sun over a layer 
+of buildings during the day. Lets see how the houses look: 
+
+```{r}
+layer <- read_sf('../data-raw/Capa01.shp')
+layer <- st_zm(layer)
+layer$Altura <- 5
+layer <- st_as_sf(as_Spatial(layer))
+saveRDS(layer, "../data/parcela.rda")
+```
+
+How do they look?
+```{r}
+mapview(layer)
+```
+
+
+Calculate for several days:
+```{r}
+days <- c('2021-01-01','2021-04-01', '2021-07-30', '2021-09-28')
+fps <- lapply(days, function(x) dayfootprint(x, layer, H='Altura', outdir='../outputs/', Xmin = 60,
+                                             stylefile = "../styles/footprint_azul.qml"))
+```

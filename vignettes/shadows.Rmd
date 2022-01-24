@@ -1,0 +1,70 @@
+---
+title: "shadows"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{shadows}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Calculate footprint for a day
+Load library
+
+```{r setup}
+library(landtools)
+```
+
+Here is an example of how to calculate the footprint of the sun over a layer 
+of buildings during the day. Lets see how the houses look: 
+
+```{r}
+layer <- casas01
+layer
+```
+How do they look?
+```{r}
+mapview(layer)
+```
+
+And now calculate the gpkg for the whole day, lets say for the 21 of Decembre of 2021,
+from 5 am to 23 am, by 60 min intervals. (Hours out of the sunrise sunset interval will be automatically not calculated)
+
+```{r}
+library(landtools)
+layer <- casas01
+dayfootprint(day = "2021-12-21", layer, H="Altura", outdir = "../outputs/", 
+             tz = "Europe/Paris", Xmin = 30)
+```
+You can plot those layers (all within the .gpkg file):
+```{r}
+res <- st_read('../outputs/20211221_footprint/20211221.gpkg')
+mapview(res, alpha.regions=0.1)
+```
+Calculate for several days:
+```{r}
+days <- c('2021-01-15','2021-04-15', '2021-08-15', '2021-11-15')
+fps <- lapply(days, function(x) dayfootprint(x, layer,H='Altura', outdir='../outputs/', Xmin = 30))
+```
+Lets now show the results between these footprints in 4 diferent days along the year:
+```{r}
+t1 <- paste('Shadows footprints between', min(fps[[1]]$Name), 'and', max(fps[[1]]$Name))
+l1 <- fps[[1]]
+plot(Altura)
+ggplot(fps[[1]])
+m1 = tm_shape(l1)+tm_fill(alpha = 0.2)+tm_shape(layer)
+m1
+m1+tm_raster(alpha=0.5)
+
+
+m2 <- mapview(fps[[2]])
+
+grid.arrange(m1, m2, ncol = 2) 
+```
+
